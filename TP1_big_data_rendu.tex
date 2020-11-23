@@ -1,0 +1,356 @@
+\documentclass[french]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{TP1 Big Data}
+\author{Perrot/Deporte}
+\date{Novembre 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{Rappel Enoncé}
+
+On considère $A \subset [0,1]^{2}$ un ensemble quelconque, et $X$ une V.A. de loi uniforme sur $[0,1]^{2}$.
+
+La classe $Y$ de $X$ est donnée par $Y = \mathbf{1}_{A}(X)$, avec $\mathbf{1}_{A}(x) = 1 $ si $ x \in A $ et 0 sinon.
+
+On note le training set de taille $l$ : $((x_{1}^{(1)},x_{2}^{(1)}),(x_{1}^{(2)},x_{2}^{(2)}),\hdots,(x_{1}^{(l)},x_{2}^{(l)}))$, de loi $(X,Y)$.
+
+Pour $p \in \mathbb{N}*$, on considère que $[0,1]^{2}$ est découpé en $p^{2}$ carreaux réguliers $(c_{ij}),1\leq i,j \leq p $ avec :
+
+\[
+c_{ij}=\left[ \frac{i-1}{p},\frac{i}{p} \right] \times 
+\left[ \frac{j-1}{p},\frac{j}{p} \right]
+\]
+
+On considère la famille de modèles $\mathcal{F}_{p}$ induite par $p \in \mathbb{N}*$, la famille de classifiers $g = \mathbf{1}_{C}$, où $C$ est une réunion quelconque de $c_{ij}$.
+
+On définit la loss-function $L(y,y') = \mathbf{1}_{y \neq y'}$, qui permet de calculer, pour tout $g \in \mathbb{F}_{p}$ le risque empirique (= sur le training set) :
+
+\[
+\hat{R}(g) = \frac{1}{l}\sum_{i=1}^{l}\mathbf{1}_{g(x^{(i)}\neq y_{i}}
+\]
+
+et le risque général (sur la population) :
+
+\[
+R(g) = \mathbb{E}(\mathbf{1}_{g(X)\neq Y})
+\]
+
+On note 
+
+\[
+\hat{R}^{*}_{p} = \underset{g \in \mathcal{F}_{p}}{\mathrm{min}} \hat{R}(g)
+\]
+
+
+
+\section{Questions et Réponses}
+
+\subsection{Question 1}
+
+\subsubsection{Enoncé}
+
+Calculer le cardinal de $\mathcal{F}_{p}$
+
+\subsubsection{Réponse}
+
+On peut voir que $\mathcal{F}_{p}$ est formé des classifiers qui donnent $0$ ou $1$ sur chacun des $ p^{2} $ carreaux de $[0,1]^{2}$, et donc $|\mathcal{F}_{p}| = 2^{p^{2}}$
+
+On peut aussi voir qu'un classifier de $\mathcal{F}_{p}$ est entièrement défini par la liste des carreaux $ c_{ij} $ sur lesquels il indique $1$, et que cette liste est un tirage quelconque de $k$ carreaux ($0 \leq k \leq p^{2}$) parmis les $p^{2}$, d'où $|\mathcal{F}_{p}| = C_{p^{2}}^{1} + C_{p^{2}}^{2} + \hdots + C_{p^{2}}^{p^{2}} = (1+1)^{p^{2}} = 2^{p^{2}}$
+
+\subsection{Question 2}
+
+Pout tout $1 \leq i,j \leq p $, on note :
+
+\[
+\hat{l}_{ij}^{+} = \sum_{k=1}^{l}\mathbf{1}_{x^{(k)}\in c_{ij}, y_{k} = 1}
+\]
+
+\[
+\hat{l}_{ij}^{-} = \sum_{k=1}^{l}\mathbf{1}_{x^{(k)}\in c_{ij}, y_{k} = -1}
+\]
+
+qui sont respectivement le nombre de points de l'échantillon présents dans le carreau $c_{ij}$ avec la classe positive $\hat{l}_{ij}^{+}$, ou négative $\hat{l}_{ij}^{-}$.
+
+\subsubsection{(a) Calculer $\mathbb{E}(\hat{l}_{ij}^{+})$ et $\mathbb{E}(\hat{l}_{ij}^{-}$)}
+
+\subsubsection{Réponse}
+
+Pour $i,j,k$ fixés, on a :
+
+\begin{align}
+\mathbb{E}(\mathbf{1}_{{x^{(k)}}\in c_{ij}, y_{k} = 1}) &=
+1 \times \mathbb{P}(x^{(k)}\in c_{ij}) \times \mathbb{P}(y_{k} = 1) 
+\\ &=
+\mathbb{P}(x^{(k)}\in c_{ij}) \times \mathbb{P}(x^{(k)}\in A) 
+\\ &=
+\mathbb{P}(x^{(k)}\in c_{ij} \cap A) 
+\\ &=
+|c_{ij} \cap A|
+\end{align}
+
+Par linéarité de l'espérance :
+
+\[
+\hat{l}_{ij}^{+} = l |c_{ij} \cap A|
+\]
+
+Et 
+
+\[
+\hat{l}_{ij}^{-} = l |c_{ij} \cap A^{c}|
+\]
+
+Avec $ A^{c} $ complémentaire de $A$ : $x^{(k)} \in A^{c} \Leftrightarrow y_{k} = -1$
+
+\subsubsection{(b) Montrer que $\hat{R}(\mathbf{1}_{\hat{C}_{p}}) = \hat{R}^{*}_{p}$}
+
+On note 
+
+\[
+\hat{C}_{p} = \underset{i,j | \hat{l}_{ij}^{+} > \hat{l}_{ij}^{-}}{\cup} c_{ij}
+\]
+
+C'est la réunion des $c_{ij}$ où il y a plus de points de l'échantillon avec une classe positive que de points avec la classe négative.
+
+A $p$ donné, c'est cette construction qui donne le classifier $\mathbf{1}_{\hat{C}_{p}}$ minimisant le risque empirique.
+
+Preuve :
+
+On considère un carrelage quelconque $C = \underset{i,j \in I_{C},J_{C}}{c_{ij}}$, qui définit un classifier de $\mathcal{F}_{p}$ : $ g = \mathbf{1}_{C}$
+
+Le risque empirique de ce classifier s'écrit :
+
+\begin{align}
+\hat{R}(g) &= \frac{1}{l}\sum_{k=1}^{l}\mathbf{1}_{g(x^{(k)}) \neq y_{k}}
+\end{align}
+
+On remarque que : 
+
+\[
+\mathbf{1}_{g(x^{(k)}) \neq y_{k}} = \mathbf{1}_{g(x^{(k)})=1,y_{k}=-1} + \mathbf{1}_{g(x^{(k)})=-1,y_{k}=+1}
+\]
+
+D'où :
+
+\begin{align}
+\hat{R}(g) &= \frac{1}{l}\sum_{k=1}^{l}\mathbf{1}_{g(x^{(k)}) \neq y_{k}} \\
+&= \frac{1}{l}\sum_{k=1}^{l} \left( \mathbf{1}_{g(x^{(k)})=1,y_{k}=-1} + \mathbf{1}_{g(x^{(k)})=-1,y_{k}=+1}
+\right) \\
+&= \frac{1}{l}\sum_{k=1}^{l} \left( \mathbf{1}_{x^{(k)}\in C,y_{k}=-1} + \mathbf{1}_{x^{(k)} \notin C,y_{k}=+1}
+\right) \\
+&= \frac{1}{l}\sum_{k=1}^{l} \left( \sum_{i,j \in I_{C},J_{C}}\mathbf{1}_{x^{(k)}\in c_{ij},y_{k}=-1} + \sum_{i,j \notin I_{C},J_{C}} \mathbf{1}_{x^{(k)} \in c_{ij},y_{k}=+1}
+\right) \\
+&= \frac{1}{l}\sum_{k=1}^{l} \left( \sum_{i,j \in I_{C},J_{C}} \hat{l}_{ij}^{-} + \sum_{i,j \notin I_{C},J_{C}} \hat{l}_{ij}^{+}
+\right) \\
+&\geq \frac{1}{l}\sum_{k=1}^{l} \sum_{i,j} \mathrm{min}\left( \hat{l}_{ij}^{-}, \hat{l}_{ij}^{+} \right) \\
+&= \frac{1}{l}\sum_{k=1}^{l} \left( \sum_{i,j | \hat{l}_{ij}^{+} > \hat{l}_{ij}^{-}} \hat{l}_{ij}^{-} + \sum_{i,j | \hat{l}_{ij}^{+} <= \hat{l}_{ij}^{-}} \hat{l}_{ij}^{+}
+\right) \\
+&= \hat{R}(\mathbf{1}_{\hat{C}_{p}}) = \hat{R}^{*}_{p}
+\end{align}
+
+Donc $ g = \mathbf{1}_{\hat{C}_{p}} $ est le classifier qui minimise le risque empirique. $\hat{C}_{p}$ est le meilleur carrelage que l'on puisse construire.
+
+
+\subsection{Question 3}
+
+\subsubsection{Enoncé}
+
+Montrer que $\forall \epsilon > 0$, on a :
+
+\[
+P(|R(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}^{*}_{p}| > \epsilon) \leq
+\sum_{g \in \mathcal{F}_{p}} 
+P(|R(g) - \hat{R}(g)| > \epsilon)
+\]
+
+En déduire : $ P(|R(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}^{*}_{p}| > \epsilon) \rightarrow 0 $ quand $l \rightarrow \infty$
+
+\subsubsection{Réponse}
+
+On sait que $ \hat{R}^{*}_{p} = \hat{R}(\mathbf{1}_{\hat{C}_{p}})$, donc
+
+\begin{align}
+P(|R(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}^{*}_{p}| > \epsilon) &=
+P(|R(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}(\mathbf{1}_{\hat{C}_{p}})| > \epsilon) \\
+&\leq \sum_{g \in \mathcal{F}_{p}} P(|R(g) - \hat{R}(g)| > \epsilon)
+\end{align}
+
+Pour $g$ donné dans $\mathcal{F}_{p}$, on considère la V.A. $ Z = \mathbf{1}_{g(X) \neq Y}$, avec $l$ observations I.I.D. $z_{i} = \mathbf{1}_{g(x^{(i)} \neq y_{i}}$
+
+Par la loi des grands nombres, on a $ \frac{1}{l}\sum_{k=1}^{l} z_{i} \rightarrow \mathbb{E}(Z)$, au sens des probabilités, cad, pour tout $g$ :
+
+\[
+P(|R(g)-\hat{R}(g)|>\epsilon)|) 
+\underset{l \rightarrow \infty}{\longrightarrow} 0
+\]
+
+Comme $\mathcal{F}_{p}$ est de cardinal fini, on en déduit, pour $p$ fixé,
+
+\[
+P(|R(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}^{*}_{p}| > \epsilon) \underset{l \rightarrow \infty}{\longrightarrow} 0
+\]
+ 
+C'est un résultat important : à $p$ fixé, l'erreur empirique de notre meilleur classifier $\mathbf{1}_{\hat{C}_{p}}$ tend vers son erreur intrinsèque de généralisation quand la taille du training set augmente.
+
+
+\subsection{Question 4}
+
+\subsubsection{Enoncé}
+
+On cherche maintenant l'oracle, cad un $g = \mathbf{1}_{C^{*}_{p}}$ qui va minimiser l'erreur de généralisation sur toute la famille de modèles :
+
+\[
+R^{*}_{p} = R(\mathbf{1}_{C^{*}_{p}}) = \underset{g \in \mathcal{F}_{p}}{\mathrm{inf}}R(g)
+\]
+
+\subsubsection{Réponse}
+
+On suit la même démarche que la construction de $\hat{C}_{p}$, cette fois non plus en comptant les points de l'échantillon de classe positive (resp négative) dans chacun des carreaux $c_{ij}$, mais en regardant la mesure de $c_{ij} \cap A$ (resp. $c_{ij} \cap A^{c}$)
+
+On construit ainsi :
+
+\[
+C^{*}_{p} = \underset{i,j : |c_{ij} \cap A| \geq |c_{ij} \cap A^{c}|}{\cup} c_{ij}
+\]
+
+Puis on prend un $g = \mathbf{1}_{C_{p}} \in \mathcal{F}_{p}$ quelconque, construit sur un carrelage $C_{p} = \underset{i,j}{\cup} c_{ij}$
+
+L'erreur de généralisation $R(g)$ vérifie :
+
+\begin{align}
+R(g) &= \mathbb{E}(\mathbf{1}_{g(X)\neq Y}) \\
+&= \int_{[0,1]^{2}} \mathbf{1}_{g(x) \neq y} dP(x) \\
+&= \int_{[0,1]^{2}} \mathbf{1}_{g(x) \neq y} dx \hspace{2mm}\mathrm{(loi-uniforme)}\\ 
+&= \int_{[0,1]^{2}} \mathbf{1}_{g(x)=1;y=-1} + \mathbf{1}_{g(x)=-1;y=1}dx \\
+&= \sum_{i,j \in I_{C},J_{C}}\int_{c_{ij}}\mathbf{1}_{y=-1}dx +
+\sum_{i,j \notin I_{C},J_{C}}\int_{c_{ij}}\mathbf{1}_{y=1}dx \\
+&= \sum_{i,j \in I_{C},J_{C}} |c_{ij} \cap A^{c}| + 
+\sum_{i,j \notin I_{C},J_{C}} |c_{ij} \cap A| \\
+&\geq \sum_{i,j \in I_{C^{*}},J_{C^{*}}} |c_{ij} \cap A^{c}| + 
+\sum_{i,j \notin I_{C^{*}},J_{C^{*}}} |c_{ij} \cap A| \\
+&= R(\mathbf{1}_{C_{p}^{*}})=R^{*}_{p}
+\end{align}
+
+Donc l'oracle est bien $\mathbf{1}_{C^{*}_{p}}$
+
+\subsection{Question 5}
+
+\subsubsection{Enoncé}
+
+On veut montrer ici que $P(|R(\mathbf{1_{\hat{C}_{p}}})-R_{p}^{*}|>\epsilon) \rightarrow 0 $ quand $ l \rightarrow \infty $
+
+Cad que l'erreur de généralisation de notre classifier $\mathbf{1}_{\hat{C}_{p}}$ tend vers la meilleure erreur possible.
+
+Donc que $\mathbf{1}_{\hat{C}_{p}}$ tend, au sens de l'erreur de généralisation, vers l'oracle.
+
+\subsubsection{Réponse}
+
+On donne ici une réponse un peu différente de celle donnée en TP.
+
+On voit d'abord que $0 \leq R(\mathbf{1}_{\hat{C}_{p}}) - R^{*}_{p}$ par définition de $ R^{*}_{p} $.
+
+On décompose :
+
+\begin{align}
+0 \leq R(\mathbf{1}_{\hat{C}_{p}}) - R^{*}_{p} &= R(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}(\mathbf{1}_{\hat{C}_{p}}) \\
+&+ \hat{R}(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}(\mathbf{1}_{C_{p}^{*}}) \\
+&+ \hat{R}(\mathbf{1}_{C_{p}^{*}}) - R(\mathbf{1}_{C_{p}^{*}})
+\end{align}
+
+La deuxième ligne vérifie $0 \leq \hat{R}(\mathbf{1}_{\hat{C}_{p}}) - \hat{R}(\mathbf{1}_{C_{p}^{*}}) $ par définition de $\hat{R}(\mathbf{1}_{\hat{C}_{p}})$.
+
+Donc :
+
+\[
+0 \leq R(\mathbf{1}_{\hat{C}_{p}}) - R^{*}_{p} \leq 2 \times
+\underset{g \in \mathcal{F}_{p}}{\mathrm{sup}} 
+|R(g) - \hat{R}(g) |
+\]
+
+Avec la loss-function $l(y,y') = \mathbf{1}_{y \neq y'}$, on ré-écrit :
+
+\[
+R(g) = \mathbb{E}(l(g(X),Y))
+\]
+
+\[
+\hat{R}(g) = \frac{1}{l}\sum_{i=1}^{l}l(y_{i},g(x^{(i)}))
+\]
+
+On utilise Chebychev :
+
+\[
+P((X-\mathbb{E}(X))^{2} \geq \epsilon) \leq \frac{Var(X)}{\epsilon^{2}}
+\]
+
+pour $X$ V.A.
+
+On pose ici $Z = \frac{1}{l}\sum_{i=1}^{l} l(g(X^{(i)}),X^{(i)})$, avec $ \mathbb{E}(Z) = \mathbb{E}l(g(X),X) = R(g) $, et :
+
+\[
+P(|Z-\mathbb{E}(Z)|\geq \epsilon) = P(|Z-\mathbb{E}(Z)|^{2}\geq \epsilon^{2}|) \leq \frac{Var(Z)}{\epsilon^{2}}
+\]
+
+Ici $\mathrm{Var}(Z) = \frac{1}{l^{2}} \times l \times \mathrm{Var}(l(g(X),X)) = \frac{\sigma^{2}}{l}$
+
+Au final : 
+
+\[
+P(|\hat{R}(g) - R(g)|\geq \epsilon) \leq \frac{\sigma^{2}}{l}
+\]
+
+Le majorant est indépendant de $g$, donc c'est encore un majorant du sup, et donc :
+
+\[
+P(|R(\mathbf{1_{\hat{C}_{p}}})-R_{p}^{*}|>\epsilon) \leq \frac{2\sigma^{2}}{l}
+\]
+
+Cad que l'erreur de généralisation de notre classifier $\hat{\mathbf{1}}_{\hat{C}_{p}}$ tend vers l'erreur minimale de généralisation sur l'ensemble $\mathcal{F}_{p}$ de la classe de modèles, quand la taille de l'échantillon tend vers l'infini.
+
+A $p$ fixé, quand la taille de l'échantillon augmente, l'erreur empirique du classifier tend vers son erreur de généralisation ("convergence simple" à modèle fixé), qui elle-même tend vers l'erreur minimale de généralisation sur $\mathcal{F}_{p}$ ("convergence uniforme" sur toute la classe de modèles).
+
+La borne donnée par Chebychev est grossière, d'où Hoeffding pour aborder numériquement le problème.
+
+\subsection{Question 5}
+
+On introduit maintenant un test-set $(x_{1}^{'(i)}, x_{2}^{'(i)}, y'_{i}))$, de taille $m$, distribué suivant les mêmes V.A. $X, Y$, I.I.D. et indépendant du training-set.
+
+Le risque empirique sur le test set est noté :
+
+\[
+\hat{R}'(\mathbf{1}_{C}) = \frac{1}{m}\sum_{i=1}^{m}\mathbf{1}_{{C}(x^{'(i)}) \neq y_{i}}
+\]
+
+\subsubsection{Réponse}
+
+On note $Z_{i} = \mathbf{1}_{C(X^{(i)},Y_{i})}$, d'où $\hat{R}'(\mathbf{1}_{C}) = \frac{S_{m}}{m}$ avec les notations plus haut.
+
+On applique Hoeffding, avec $m \geq -\frac{\mathrm{log}(\eta/2)}{2\epsilon^{2}}$, la borne supérieure devient :
+
+\[
+2\mathrm{exp}(-2m\epsilon^{2}) \leq \eta
+\]
+
+Donc :
+
+\begin{align}
+P(|\hat{R}'(\mathbf{1}_{C}) - R(\mathbf{1}_{C})| > \epsilon) \leq \eta
+\end{align}
+
+Cette dernière égalité est valable pour tout $C$, donc en particulier pour notre $\hat{C}_{p}$, qui est le carrelage avec lequel nous construisons notre estimateur.
+
+Pour $\eta = 0.05$ et $\epsilon = 0.02$, on trouve $m_{0} = 4611$
+
+Au delà de 4611 points dans le test-set, l'écart entre l'erreur commise sur le test-set par notre classifier et son erreur de généralisation, est donc inférieur à $2\%$ avec une probabilité de $95\%$ .
+
+
+\end{document}
